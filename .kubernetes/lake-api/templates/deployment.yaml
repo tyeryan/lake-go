@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lake-api.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app-pace-co/app: {{ include "lake-api.name" . }}
+    chart: {{ include "lake-api.chart" . }}
+{{- if .Values.extraLabels }}
+{{- range $key, $value := .Values.extraLabels }}
+    {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
+spec:
+  replicas: {{ .Values.replica_count }}
+  selector:
+    matchLabels:
+      app-pace-co/app: {{ include "lake-api.name" . }}
+  template:
+    metadata:
+      {{- if .Values.podAnnotations }}
+      annotations:
+        {{- range $key, $value := .Values.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
+      labels:
+        app-pace-co/app: {{ include "lake-api.name" . }}
+        chart: {{ include "lake-api.chart" . }}
+{{- if .Values.extraLabels }}
+{{- range $key, $value := .Values.extraLabels }}
+        {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+{{- if .Values.securityContext }}
+      securityContext:
+{{ toYaml .Values.securityContext | indent 8 }}
+{{- end }}
+      containers:
+        - name: lake-api
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          command:
+            - "/bin/bash"
+            - "-c"
+          args:
+            {{- range .Values.image.args }}
+            - {{ . | quote }}
+            {{- end }}
+          ports:
+          - name: grpc
+            port: 8888
+            containerPort: {{ .Values.service.targetPort }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "lake-api.name" . }}-config
+          resources:
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.resources.limits.memory }}
+          livenessProbe:
+{{ toYaml .Values.livenessProbe | indent 12 }}
+          readinessProbe:
+{{ toYaml .Values.readinessProbe | indent 12 }}
+{{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+      {{- end }}

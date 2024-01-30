@@ -1,0 +1,40 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "lake-api.fullname" . }}-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    app-pace-co/app: {{ include "lake-api.name" . }}
+    chart: {{ include "lake-api.chart" . }}
+  {{- if .Values.extraLabels }}
+  {{- range $key, $value := .Values.extraLabels }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- end }}
+data:
+  'LOG_LEVEL': '{{ .Values.log.level }}'
+
+  # service config: config/service.go
+  'SERVICECONFIG_SERVICENAME': 'lake-api'
+  'SERVICECONFIG_ENV': '{{ .Values.env }}'
+
+  'GRPC_CLIENT_CONFIG_L_AUTH': '{{ .Values.grpc_client.l_auth }}'
+
+  # redis
+  'REDISCONFIG_HOST': '{{ .Values.redis.host }}'
+  'REDISCONFIG_PORT': '{{ .Values.redis.port }}'
+
+  # APM config
+  'APM_ENABLE': '{{ .Values.apm.enable }}'
+  'ELASTIC_APM_ACTIVE': '{{ .Values.apm.enable }}'
+  'ELASTIC_APM_ENVIRONMENT': '{{ .Values.apm.environment }}'
+  'ELASTIC_APM_LOG_FILE': '{{ .Values.apm.log_file }}'
+  'ELASTIC_APM_LOG_LEVEL': '{{ .Values.apm.log_level }}'
+  'ELASTIC_APM_SERVER_URL': '{{ .Values.apm.server_url }}'
+  'ELASTIC_APM_VERIFY_SERVER_CERT': '{{ .Values.apm.verify_server_cert }}'
+  'ELASTIC_APM_TRANSACTION_SAMPLE_RATE': '{{ .Values.apm.sample_rate }}'
+
+  # rate limit
+  'API_RATE_LIMIT_ENABLE': '{{ .Values.rate_limit.enable }}'
+  'API_RATE_LIMIT_AMOUNT': '{{ .Values.rate_limit.amount }}'
+  'API_RATE_LIMIT_TIME_INTERVAL': '{{ .Values.rate_limit.time_interval }}'

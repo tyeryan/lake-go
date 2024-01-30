@@ -1,0 +1,70 @@
+service:
+  port: 8080
+  targetPort: 8080
+
+#extraLabels:
+#  app-you-co/domain-topup: true
+
+serviceAccount:
+  create: true
+  name: lake-api
+securityContext:
+  runAsUser: 10001
+livenessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 15
+  failureThreshold: 5
+  timeoutSeconds: 3
+readinessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 15
+  failureThreshold: 5
+  timeoutSeconds: 3
+
+# Application specification
+
+env: dev
+namespace: app
+replica_count: 1
+ingress:
+  domain: ''
+  gateway: l-api-gateway
+resources:
+  requests:
+    memory: 100Mi
+    cpu: 50m
+  limits:
+    memory: 200Mi
+    cpu: 50m
+image:
+  repository: localhost:5005/application/lake-api
+  tag: latest
+  args:
+    - sleep 5 && /go/bin/lake-api
+log:
+  level: debug
+
+grpc_client:
+  l_auth: l-auth.app.svc.cluster.local:8888
+
+redis:
+  host: redis.endpoint.svc.cluster.local
+  port: 6379
+
+apm:
+  enable: false
+  environment: ""
+  log_file: stdout
+  log_level: error
+  server_url: ""
+  verify_server_cert: false
+  sample_rate: 0.0
+
+rate_limit:
+  enable: false
+  amount: 1000
+  time_interval: 5

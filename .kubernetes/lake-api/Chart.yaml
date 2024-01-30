@@ -1,0 +1,4 @@
+apiVersion: v1
+description: lake-api service
+name: lake-api
+version: 1.0.0

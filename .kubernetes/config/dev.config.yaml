@@ -1,0 +1,29 @@
+env: dev
+namespace: app
+replica_count: 1
+ingress:
+  domain: api.dev.lake.co
+
+resources:
+  requests:
+    memory: 100Mi
+    cpu: 50m
+  limits:
+    memory: 200Mi
+    cpu: 100m
+
+image:
+  repository: localhost/application/lake-go
+  tag: latest
+
+log:
+  level: debug
+
+apm:
+  enable: true
+  environment: dev
+  server_url: http://apm-server-apm-server.logging.svc:8200
+  sample_rate: "1.0"
+
+rate_limit:
+  enable: true
